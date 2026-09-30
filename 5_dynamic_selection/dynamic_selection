@@ -1,0 +1,92 @@
+# Dynamic Selection
+
+The problem folder 3 & 4 don't solve: every subtask -- whatever it is --
+goes to the exact same subagent. Same model, same system prompt, same
+(zero) tools. A one-line lookup and a 3000-word investigative research
+task get identical treatment.
+
+```python
+    SUBAGENT_SYSTEM = "You are a focused subagent..."
+    MODEL = "claude-sonnet-5"   # fixed, for every single subtask
+```
+
+That's wasteful in both directions:
+
+* cheap/simple subtasks pay for a bigger model than they need (cost + latency)
+* hard/specialized subtasks get a generic persona with no tools, when they'd
+  do much better with a tailored system prompt -- or actual tool access
+  (web_search, code execution, etc.)
+
+# The idea
+
+Don't hand every subtask to "the subagent." Hand each subtask to *a*
+subagent, chosen dynamically based on what that subtask actually needs.
+
+```python
+    const subagent_profiles = {
+      "lookup":   { model: "haiku",  system: "...", tools: [] },
+      "research": { model: "sonnet", system: "...", tools: ["web_search"] },
+      "writing":  { model: "sonnet", system: "...", tools: [] },
+      "code":     { model: "sonnet", system: "...", tools: ["code_execution"] },
+      "critique": { model: "opus",   system: "...", tools: [] },
+    }
+```
+
+Who picks the profile?
+
+1. **The coordinator picks it**, as part of decomposition -- extend
+   `delegate_task`'s input_schema with a required `subagent_type` (enum of
+   the profile keys above). The coordinator already knows what each
+   subtask needs; make it say so explicitly instead of leaving it implicit
+   in prose.
+2. **A separate lightweight router** classifies each task string right
+   before delegation -- one small/cheap model call whose only job is
+   "given this task, which profile fits?" Useful when the coordinator
+   itself can't be trusted to judge task type/complexity reliably.
+
+(1) is cheaper -- no extra API call, reuses reasoning the coordinator
+already did. (2) is more robust when (1) misjudges often enough to matter.
+Start with (1); only add (2) if you can show (1) is actually misrouting.
+
+# Wiring it in
+
+```python
+    async def run_subagent(client, task: str, subagent_type: str) -> str:
+        profile = subagent_profiles[subagent_type]
+        response = await client.messages.create(
+            model=profile["model"],
+            system=profile["system"],
+            tools=profile["tools"],
+            messages=[{"role": "user", "content": task}],
+        )
+        ...
+```
+
+Same shape as folder 3's `run_subagent` -- the only change is that
+`model`, `system`, and `tools` are looked up per call instead of hardcoded
+constants.
+
+# Be careful
+
+* Misrouting is silent. A hard task sent to the cheap tier doesn't error --
+  it just comes back worse, and nothing in the pipeline flags that. Same
+  failure mode as narrow decomposition (folder 4): the mistake only shows
+  up in the final answer's quality, never as an exception.
+* Don't let the coordinator invent profile names. Constrain `subagent_type`
+  to a hard enum in the tool schema -- otherwise you get typos / near-misses
+  ("code_task" vs "code") that silently fall through to a default.
+* Cost savings only materialize if the cheap tier is actually cheap enough
+  *and actually gets picked*. If the coordinator defaults to "sonnet" out
+  of caution for everything, you've built the machinery without the
+  payoff -- log which profile gets chosen per subtask to check this isn't
+  happening.
+* Model choice and tool access are two separate axes -- don't conflate
+  "needs a bigger model" with "needs a tool." A lookup task might need
+  web_search on a cheap model; a hard reasoning task might need zero tools
+  on an expensive one.
+
+# Where this fits
+
+folder 3: one subtask, one fixed subagent.
+folder 4: many subtasks, still one fixed subagent shape for all of them.
+folder 5: many subtasks, each routed to the subagent shape it actually needs.

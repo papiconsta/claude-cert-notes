@@ -1,0 +1,33 @@
+# Narrow Decomposition
+
+```python
+    const usr_msg = 'Give me a comprehensive analysis of the EV Market'
+
+    const coordinator = 'Break the user's task into subtasks and delegate them'
+
+    const subtasks = [
+    "Research EV sales figures",
+    "Research EV battery technology",
+    "Research major EV manufacturers"
+    ]
+
+```
+
+if the initial decomp. is too narrow, entire topics never get researched.
+
+it's because each subagent only sees its own isolated context, none of them can
+flag what's missing.
+
+* charging infrastracture
+* gov policy
+* second-hand EV market
+* grid capacityy implications 
+* etc
+
+# Be specific !
+
+![alt text](image.png)
+
+and also create a tool like :
+
+![alt text](image-1.png)

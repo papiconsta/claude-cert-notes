@@ -1,0 +1,13 @@
+[project]
+name = "claude-cert-exams-prep"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "anthropic[aiohttp]>=0.121.0",
+    "asyncio>=4.0.0",
+    "claude-agent-sdk>=0.2.136",
+    "jupyter>=1.1.1",
+    "python-dotenv>=1.2.2",
+]

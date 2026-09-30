@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude Cert Exam Quiz</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="title-block">
+        <h1 id="exam-title">Exam Prep Quiz</h1>
+        <p class="subtitle">Practice questions with instant feedback</p>
+      </div>
+      <div class="controls">
+        <label for="section-select" class="visually-hidden">Section</label>
+        <select id="section-select"></select>
+        <button id="reset-btn" class="btn btn-ghost" title="Clear saved progress">
+          <svg class="icon-refresh" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Reset Progress
+        </button>
+      </div>
+    </header>
+
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-meta">
+        <span id="progress-text">Question 0 of 0</span>
+        <span id="score-text">Score: 0 / 0</span>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="main-col">
+        <main class="card" id="quiz-card">
+          <div class="section-badge" id="section-badge"></div>
+          <h2 class="question-text" id="question-text"></h2>
+          <div class="options" id="options-container"></div>
+        </main>
+
+        <p class="empty-state" id="empty-state" hidden>No questions in this section yet — add some in <code>questions.json</code>.</p>
+        <p class="load-error" id="load-error" hidden></p>
+
+        <footer class="nav">
+          <button id="prev-btn" class="btn">&larr; Previous</button>
+          <span class="nav-hint">Use &larr; / &rarr; to navigate</span>
+          <button id="next-btn" class="btn btn-primary">Next &rarr;</button>
+        </footer>
+      </div>
+
+      <aside class="sidebar">
+        <h2 class="sidebar-title">Questions</h2>
+        <div class="question-list" id="question-list"></div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="reset-modal" hidden>
+    <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="reset-modal-title" aria-describedby="reset-modal-desc">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </div>
+      <h3 id="reset-modal-title">Reset progress?</h3>
+      <p id="reset-modal-desc">This clears all saved answers and your score. This can't be undone.</p>
+      <div class="modal-actions">
+        <button id="reset-cancel-btn" class="btn">No, keep it</button>
+        <button id="reset-confirm-btn" class="btn btn-danger">Yes, reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
